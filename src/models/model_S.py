@@ -69,7 +69,8 @@ def flows_model_RQS(
 
     model_S = flows.Flow(
         transform=rec_flow_transform, distribution=rec_flow_base_distribution
-    ).to(device)
+    )
+    model_S = model_S.to(device=device, dtype=torch.float32)
 
     return model_S
 
@@ -96,7 +97,9 @@ def r_anode_mass_joint_untransformed(
         if mode == "train":
             optimizer.zero_grad()
 
-        model_S_log_prob = model_S.log_prob(data_SR[:, :-1])
+        time_context = data_SR[:, 0:1]
+        features = data_SR[:, 1:-1]
+        model_S_log_prob = model_S.log_prob(inputs=features, context=time_context)
 
         if batch_idx == 0:
             assert model_S_log_prob.shape == model_B_log_prob.shape
